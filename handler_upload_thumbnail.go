@@ -1,16 +1,14 @@
 package main
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/auth"
+	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/utils"
 	"github.com/google/uuid"
 )
 
@@ -67,9 +65,12 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	filename := make([]byte, 32)
-	rand.Read(filename)
-	imagePath := filepath.Join(cfg.assetsRoot, base64.RawURLEncoding.EncodeToString(filename)+"."+mediaType)
+	imagePath, err := utils.MakeFilePath(cfg.assetsRoot, mediaType)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Internal server error", err)
+		return
+	}
+
 	imageFile, err := os.Create(imagePath)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Internal server error", err)
@@ -77,7 +78,7 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 	}
 	io.Copy(imageFile, media)
 
-	thumbnailUrl := fmt.Sprintf("http://localhost:%s/assets/%s", cfg.port, imagePath)
+	thumbnailUrl := fmt.Sprintf("http://localhost:%s/%s", cfg.port, imagePath)
 	video.ThumbnailURL = &thumbnailUrl
 
 	err = cfg.db.UpdateVideo(video)
