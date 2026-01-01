@@ -25,7 +25,7 @@ type VideoMetaData struct {
 	} `json:"streams"`
 }
 
-func GetVideoAspectRation(width, height int) (string, error) {
+func GetVideoAspectRatio(width, height int) (string, error) {
 	return fmt.Sprintf("width: %d, height: %d", width, height), nil
 }
 

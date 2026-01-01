@@ -6,27 +6,32 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-type AspectRatioTestCase struct {
+type WidthAndHegihtTestCase struct {
 	input  string
-	width  int
-	height int
+	output MetaData
 	Error  error
 }
+type MetaData struct {
+	width  int
+	height int
+}
 
-func TestGetVideoAspectRatio(t *testing.T) {
-	testCases := map[string]AspectRatioTestCase{
+func TestGetVideoWidthAndHeight(t *testing.T) {
+	testCases := map[string]WidthAndHegihtTestCase{
 		"valid width and height": {
-			input:  "../samples/boots-video-vertical.mp4",
-			width:  608,
-			height: 1080,
-			Error:  nil,
+			input: "../samples/boots-video-vertical.mp4",
+			output: MetaData{
+				width:  608,
+				height: 1080,
+			},
+			Error: nil,
 		},
 	}
 
 	for name, test := range testCases {
 		t.Run(name, func(t *testing.T) {
-			wantHeight := test.height
-			wantWidth := test.width
+			wantHeight := test.output.height
+			wantWidth := test.output.width
 			haveWidth, haveHeight, err := GetVideoWidthAndHeight(test.input)
 			if err != nil {
 				t.Error(err)
@@ -37,6 +42,40 @@ func TestGetVideoAspectRatio(t *testing.T) {
 				t.Error(outputDiff)
 			}
 			outputDiff = cmp.Diff(haveHeight, wantHeight)
+			if outputDiff != "" {
+				t.Error(outputDiff)
+			}
+		})
+	}
+}
+
+type AspectRatioTestCase struct {
+	input  MetaData
+	output string
+	Error  error
+}
+
+func TestGetVideoAspectRatio(t *testing.T) {
+	testCases := map[string]AspectRatioTestCase{
+		"valid width and height": {
+			input: MetaData{
+				width:  608,
+				height: 1080,
+			},
+			Error:  nil,
+			output: "16:8",
+		},
+	}
+
+	for name, test := range testCases {
+		t.Run(name, func(t *testing.T) {
+			want := test.output
+			have, err := GetVideoAspectRatio(test.input.width, test.input.height)
+			if err != nil {
+				t.Error(err)
+			}
+
+			outputDiff := cmp.Diff(have, want)
 			if outputDiff != "" {
 				t.Error(outputDiff)
 			}
