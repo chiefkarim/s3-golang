@@ -35,5 +35,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.12 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.41.5 // indirect
 	github.com/aws/smithy-go v1.24.0 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 )
