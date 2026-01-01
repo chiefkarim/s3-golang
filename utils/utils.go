@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os/exec"
 	"path/filepath"
 )
@@ -26,7 +27,17 @@ type VideoMetaData struct {
 }
 
 func GetVideoAspectRatio(width, height int) (string, error) {
-	return fmt.Sprintf("width: %d, height: %d", width, height), nil
+	tolerance := 0.02
+
+	ratio := float64(width) / float64(height)
+	switch {
+	case math.Abs(ratio-(16.0/9.0)) < tolerance:
+		return "16:9", nil
+	case math.Abs(ratio-(9.0/16.0)) < tolerance:
+		return "9:16", nil
+	default:
+		return "other", nil
+	}
 }
 
 func GetVideoWidthAndHeight(filePath string) (int, int, error) {

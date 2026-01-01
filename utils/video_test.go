@@ -57,13 +57,21 @@ type AspectRatioTestCase struct {
 
 func TestGetVideoAspectRatio(t *testing.T) {
 	testCases := map[string]AspectRatioTestCase{
-		"valid width and height": {
+		"protrait video": {
 			input: MetaData{
 				width:  608,
 				height: 1080,
 			},
 			Error:  nil,
-			output: "16:8",
+			output: "9:16",
+		},
+		"landscape video": {
+			input: MetaData{
+				width:  1080,
+				height: 608,
+			},
+			Error:  nil,
+			output: "16:9",
 		},
 	}
 
