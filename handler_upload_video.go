@@ -62,7 +62,7 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	tempVideo, err := os.CreateTemp("", "tubely-upload.mp4")
+	tempVideo, err := os.CreateTemp("", "tubely-upload")
 	defer os.Remove(tempVideo.Name())
 	defer tempVideo.Close()
 	if err != nil {
@@ -72,10 +72,22 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 
 	io.Copy(tempVideo, media)
 	tempVideo.Seek(0, io.SeekStart)
-
 	extention := strings.Split(mediaType, "/")[1]
 
-	width, height, err := utils.GetVideoWidthAndHeight(tempVideo.Name())
+	proccessedVideoPath, err := utils.ProcessVideoForFastStart(tempVideo.Name())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Internal server error", err)
+		return
+	}
+	proccessedVideo, err := os.Open(proccessedVideoPath)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Internal server error", err)
+		return
+	}
+	defer proccessedVideo.Close()
+	defer os.Remove(proccessedVideoPath)
+
+	width, height, err := utils.GetVideoWidthAndHeight(proccessedVideo.Name())
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Internal server error", err)
 		return
@@ -91,7 +103,7 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 	videoMetaData := s3.PutObjectInput{
 		Key:         &videoKey,
 		Bucket:      &cfg.s3Bucket,
-		Body:        tempVideo,
+		Body:        proccessedVideo,
 		ContentType: &mediaType,
 	}
 	_, err = cfg.s3Client.PutObject(r.Context(), &videoMetaData)

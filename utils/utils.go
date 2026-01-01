@@ -6,9 +6,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 func MakeFilePath(root, extention string) (string, error) {
@@ -48,8 +50,8 @@ func GetVideoWidthAndHeight(filePath string) (int, int, error) {
 	command.Stderr = &errors
 	err := command.Run()
 	if err != nil {
-		fmt.Print("\n", err)
-		fmt.Print("\n", errors.String(), "\n")
+		log.Print("\n", err)
+		log.Print("\n", errors.String(), "\n")
 		return 0, 0, err
 	}
 
@@ -65,4 +67,30 @@ func GetVideoWidthAndHeight(filePath string) (int, int, error) {
 	}
 
 	return width, height, err
+}
+
+func ProcessVideoForFastStart(filePath string) (string, error) {
+	output := strings.ReplaceAll(filePath, "mp4", "") + ".processing.mp4"
+	command := exec.Command("ffmpeg",
+		"-i",
+		filePath,
+		"-c",
+		"copy",
+		"-movflags",
+		"faststart",
+		"-f",
+		"mp4",
+		output,
+	)
+	var errors bytes.Buffer
+	command.Stderr = &errors
+
+	err := command.Run()
+	if err != nil {
+		fmt.Print("\n", err)
+		fmt.Print("\n", errors.String(), "\n")
+		return "", err
+	}
+
+	return output, nil
 }
