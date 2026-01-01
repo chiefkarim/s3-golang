@@ -26,17 +26,17 @@ type VideoMetaData struct {
 	} `json:"streams"`
 }
 
-func GetVideoAspectRatio(width, height int) (string, error) {
+func GetVideoAspectRatio(width, height int) string {
 	tolerance := 0.02
 
 	ratio := float64(width) / float64(height)
 	switch {
 	case math.Abs(ratio-(16.0/9.0)) < tolerance:
-		return "16:9", nil
+		return "16:9"
 	case math.Abs(ratio-(9.0/16.0)) < tolerance:
-		return "9:16", nil
+		return "9:16"
 	default:
-		return "other", nil
+		return "other"
 	}
 }
 

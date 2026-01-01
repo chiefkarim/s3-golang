@@ -74,7 +74,15 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 	tempVideo.Seek(0, io.SeekStart)
 
 	extention := strings.Split(mediaType, "/")[1]
-	videoKey, err := utils.MakeFilePath("", extention)
+
+	width, height, err := utils.GetVideoWidthAndHeight(tempVideo.Name())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Internal server error", err)
+		return
+	}
+	aspectRatio := utils.GetVideoAspectRatio(width, height)
+
+	videoKey, err := utils.MakeFilePath(aspectRatioToFolderName(aspectRatio), extention)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Internal server error", err)
 		return
@@ -91,7 +99,6 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		respondWithError(w, http.StatusInternalServerError, "Internal server error", err)
 		return
 	}
-
 	videoUrl := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", cfg.s3Bucket, cfg.s3Region, videoKey)
 	video.VideoURL = &videoUrl
 	err = cfg.db.UpdateVideo(video)
@@ -101,4 +108,15 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 	}
 
 	respondWithJSON(w, http.StatusCreated, "Video successfully uploaed")
+}
+
+func aspectRatioToFolderName(aspectRatio string) string {
+	switch aspectRatio {
+	case "16:9":
+		return "landscape"
+	case "9:16":
+		return "portrait"
+	default:
+		return "other"
+	}
 }

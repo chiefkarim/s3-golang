@@ -52,7 +52,6 @@ func TestGetVideoWidthAndHeight(t *testing.T) {
 type AspectRatioTestCase struct {
 	input  MetaData
 	output string
-	Error  error
 }
 
 func TestGetVideoAspectRatio(t *testing.T) {
@@ -62,7 +61,6 @@ func TestGetVideoAspectRatio(t *testing.T) {
 				width:  608,
 				height: 1080,
 			},
-			Error:  nil,
 			output: "9:16",
 		},
 		"landscape video": {
@@ -70,7 +68,6 @@ func TestGetVideoAspectRatio(t *testing.T) {
 				width:  1080,
 				height: 608,
 			},
-			Error:  nil,
 			output: "16:9",
 		},
 	}
@@ -78,10 +75,7 @@ func TestGetVideoAspectRatio(t *testing.T) {
 	for name, test := range testCases {
 		t.Run(name, func(t *testing.T) {
 			want := test.output
-			have, err := GetVideoAspectRatio(test.input.width, test.input.height)
-			if err != nil {
-				t.Error(err)
-			}
+			have := GetVideoAspectRatio(test.input.width, test.input.height)
 
 			outputDiff := cmp.Diff(have, want)
 			if outputDiff != "" {
