@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
@@ -11,6 +12,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 func MakeFilePath(root, extention string) (string, error) {
@@ -93,4 +97,13 @@ func ProcessVideoForFastStart(filePath string) (string, error) {
 	}
 
 	return output, nil
+}
+
+func GenratePresignedUrl(s3Client *s3.Client, bucket, key string, expireTime time.Duration) (string, error) {
+	presignedClient := s3.NewPresignClient(s3Client)
+	presignedUrl, err := presignedClient.PresignGetObject(context.Background(), &s3.GetObjectInput{
+		Key:    &key,
+		Bucket: &bucket,
+	}, s3.WithPresignExpires(expireTime))
+	return presignedUrl.URL, err
 }

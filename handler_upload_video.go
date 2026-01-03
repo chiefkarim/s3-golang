@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"mime"
 	"net/http"
@@ -111,8 +110,10 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		respondWithError(w, http.StatusInternalServerError, "Internal server error", err)
 		return
 	}
-	videoUrl := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", cfg.s3Bucket, cfg.s3Region, videoKey)
-	video.VideoURL = &videoUrl
+
+	videoKey = cfg.s3Bucket + "," + videoKey
+	video.VideoURL = &videoKey
+
 	err = cfg.db.UpdateVideo(video)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Internal server error", err)
