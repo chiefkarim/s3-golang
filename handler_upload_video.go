@@ -110,8 +110,7 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		respondWithError(w, http.StatusInternalServerError, "Internal server error", err)
 		return
 	}
-
-	videoKey = cfg.s3Bucket + "," + videoKey
+	videoKey = cfg.s3CfDistribution + "/" + videoKey
 	video.VideoURL = &videoKey
 
 	err = cfg.db.UpdateVideo(video)
